@@ -1,0 +1,67 @@
+
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.2/jquery.min.js"></script>
+<script type="text/javascript" src="/socket.io/socket.io.js"></script>
+<script>
+var url = window.location.protocol+'//'+window.location.host;
+//alert(url);
+var socket = io.connect(url);
+socket.on('msg', function (data) {
+	showMsg(data);
+});
+socket.on('newChatRoom', function (data) {
+	console.dir(data);
+	$('#rid').val(data.rid);
+});
+socket.on('sendMsg', function (data) {
+	console.dir(data);
+});
+var showMsg = function (data){};
+$(function(){
+	showMsg = function(data){
+		var time = $('<span style="color:red;"></span>').html(data.time+'&nbsp;&nbsp;');
+		var username = $('<span style="color:blue;"></span>').html(data.username+'&nbsp;&nbsp;');
+		var say = $('<span style="color:black;"></span>').html('say:&nbsp;&nbsp;');
+		var msg = $('<span style="color:green;"></span>').text(data.msg);
+		var div = $('<div style="display:none;"></div>').append(time).append(username).append(say).append(msg);
+		div.insertAfter('#demo span:eq(0)').slideDown();//fadeIn();
+		//div.appendTo('#demo').fadeIn();
+	};
+	$('#butt_login').click(function(){
+		var data = {pfid: $('#pfid').val(), username: $('#username').val()};
+		console.dir(data);
+		socket.emit('login', data);
+	});
+	$('#butt_logout').click(function(){
+		socket.emit('logout',$('#username').val());
+	});
+	$('#butt_send').click(function(){
+		socket.emit('msg',$('#message').val());
+	});
+	$('#butt_newChatRoom').click(function(){
+		var data ={pfid2: $('#call2Who').val()};
+		socket.emit('newChatRoom', data);
+	});
+	$('#butt_Contacts').click(function(){
+		socket.emit('inquireContacts', ["101", "102"] );
+	});
+});
+
+</script>
+PFID: <input type="text" id='pfid' value=""/>
+Name: <input type="text" id='username' value=""/>
+<input type="button" value="join" id="butt_login"/>
+<input type="button" value="leave" id="butt_logout"/>
+<br>
+<input type="button" value="inquire contacts" id="butt_Contacts"/>
+
+<br>
+Call to who: <input type="text" id='call2Who' value=""/>
+<input type="button" value="new Chat Room" id="butt_newChatRoom"/>
+
+<br>
+room id: <input type="text" id='rid' value=""/>
+message: <input type="text" id='message' value=""/>
+<input type="button" value="send" id="butt_send"/>
+<div id='demo' style="boder:1px;border-style:dotted;width:800px;height:300px;overflow:auto;">
+<span>...</span>
+</div>
